@@ -192,12 +192,46 @@ class SeamCarver(Picture):
         '''
         Remove a vertical seam from the picture
         '''
+
+        # checker
+
+        if len(seam) != self._height:
+            raise SeamError("SEAM LENGTH MUST EQUAL IMAGE HEIGHT")
+        
+        if self._width <= 1:
+            raise SeamError("CANNOT REMOVE SEAM WITH WIDTH = 1")
+        
+        for j in range (1, self._height):
+            if abs(seam[j] - seam[j-1]) > 1:
+                raise SeamError("CONSECUTIVE ENTRIES DIFFER BY MORE THAN 1")
+            
+        for j in range(self._height): 
+            if seam[j] < 0 or seam[j] >= self._width:
+                raise IndexError("SEAM INDEX IS OUT OF BOUNDS")
+
+        # seaming
         raise NotImplementedError
 
     def remove_horizontal_seam(self, seam: list[int]):
         '''
         Remove a horizontal seam from the picture
         '''
+
+        # checker
+
+        if len(seam) != self._width:
+            raise SeamError("SEAM LENGTH MUST EQUAL IMAGE WIDTH")
+        
+        if self._height <= 1:
+            raise SeamError("CANNOT REMOVE SEAM WITH HEIGHT = 1")
+        
+        for i in range (1, self._width):
+            if abs(seam[i] - seam[i-1]) > 1:
+                raise SeamError("CONSECUTIVE ENTRIES DIFFER BY MORE THAN 1")
+            
+        for i in range(self._width): 
+            if seam[i] < 0 or seam[i] >= self._width:
+                raise IndexError("SEAM INDEX IS OUT OF BOUNDS")
         print(self.get(0,0))
 
         raise NotImplementedError
