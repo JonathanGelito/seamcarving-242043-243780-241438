@@ -51,17 +51,15 @@ class SeamCarver(Picture):
         Return a sequence of indices representing the lowest-energy
         vertical seam
         '''
-        
-        print(self.energy(1,0))
 
         
         start_time = time.time()
-        vertical_seam=dict()
+        returned_seam=[]
         memoization=dict()
         w=0
         q=sys.maxsize
         #Energy Inefficient Method
-        def M(i,j):
+        ''' def M(i,j):
             energypath=0
             if i<0: i=0
             if i>self._width-1: i=self._width-1
@@ -70,17 +68,20 @@ class SeamCarver(Picture):
             else:
                 energypath=self.energy(i,j) + min(M(i-1,j-1),M(i,j-1),M(i+1,j-1))
             return energypath
-        
-        while w < self._width: 
+        '''
+        ''' while w < self._width: 
             q=min(q,M(w,self._height-1))
             w+=1
+        '''   
 
+        '''
+        #Energy Semi Efficient Method. 
         def vertical_seam_memoization(i,j, memoization):
             for a in range(self._width):
                 for b in range(self._height):
                     memoization[a,b]=sys.maxsize
             return VS(i,j,memoization)
-
+        
         def VS(i,j, memoization):
 
             if i<0: 
@@ -91,9 +92,7 @@ class SeamCarver(Picture):
                 return memoization[i,j]
             energypath=0
             if j<=0:
-                
                 energypath=self.energy(i,j)
-                print("energypathcalled")
             else:
                 energypath=sys.maxsize
                 energypath=self.energy(i,j) + min(VS(i-1,j-1, memoization),VS(i,j-1, memoization),VS(i+1,j-1, memoization))
@@ -102,29 +101,80 @@ class SeamCarver(Picture):
 
             return energypath
         w=0
+
+        #use divide and countuer this 
         lnbro=sys.maxsize
         while w < self._width: 
             lnbro=min(lnbro,vertical_seam_memoization(w, self._height-1, vertical_seam))
             w+=1
-        
-        k=0
+        ''' 
+        #Energy Efficient (Bottom Up Approach) Method. 
+        energypath=0
+        def arraybuilder_solution() -> list[int]:
+            
+            for a in range(self._height):
+                for b in range(self._width):
+                    energy=0
+                    if a==0:
+                        energy=self.energy(b,a)
+                        memoization[b,a]=energy
+                    else:
+                        if b==0:
+                            energy=self.energy(b,a)+min(memoization[b,a-1],memoization[b+1,a-1])
+                            memoization[b,a]=energy
+                        elif b==self._width-1:
+                            energy=self.energy(b,a)+min(memoization[b-1,a-1],memoization[b,a-1])
+                            memoization[b,a]=energy
+                        else:
+                            energy=self.energy(b,a)+min(memoization[b-1,a-1],memoization[b,a-1],memoization[b+1,a-1])
+                            memoization[b,a]=energy
+            
+            
 
-        while k<self._height:
-            print(self.energy(0,k), self.energy(1,k), self.energy(2,k)) #self.energy(3,k), self.energy(4,k), self.energy(5,k)
-            k+=1
+            #Get the minimum energy in the lowest part of the graph:
+            lowestenergy=sys.maxsize
+            lowestenergyx=0
+            for c in range(self._width):
+                if memoization[c,self._height-1] < lowestenergy:
+                    lowestenergy=memoization[c,self._height-1]
+                    lowestenergyx=c
+
+
+            #retracing those steps
+            vertical_seam=list()
+
+            for d in range(self._height):
+                
+                if lowestenergyx==0:
+                    candidates={lowestenergyx: memoization[lowestenergyx,self._height-1-d], lowestenergyx+1: memoization[lowestenergyx+1,self._height-1-d]}
+                elif lowestenergyx==self._width-1:
+                    candidates={lowestenergyx-1 :memoization[lowestenergyx-1,self._height-1-d], lowestenergyx: memoization[lowestenergyx,self._height-1-d]}
+                else:
+                    candidates={lowestenergyx-1 :memoization[lowestenergyx-1,self._height-1-d], lowestenergyx: memoization[lowestenergyx,self._height-1-d], lowestenergyx+1: memoization[lowestenergyx+1,self._height-1-d]}
+
+                lowestenergyx=min(candidates, key=candidates.get)
+                vertical_seam.append(lowestenergyx)
+                
+            vertical_seam.reverse()
+            
+            return vertical_seam
+
+        #Energy Efficient (top down Approach) Method.
+                        
+
+
+
+
+
+        k=0
         
         #tests
-        print(math.sqrt(52020))
-        print(M(0,0))
-        print(vertical_seam_memoization(0,0,memoization))
-        print(M(0,1))
-        print(vertical_seam_memoization(0,3,memoization))
-        print(self.energy(0,0)+self.energy(0,1)+self.energy(0,2)+self.energy(0,3))
-        print(q)
-        print(lnbro)
-        print(vertical_seam)
+        #print(M(0,0))
+        returned_seam=arraybuilder_solution()
+        #print(M(0,1))
+        #print(q)
         print("--- %s seconds ---" % (time.time() - start_time))
-        return vertical_seam
+        return returned_seam
     
         raise NotImplementedError
 
