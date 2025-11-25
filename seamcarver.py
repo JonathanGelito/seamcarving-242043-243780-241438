@@ -23,6 +23,7 @@ class SeamCarver(Picture):
         else: right_x=self[0,j]  
         if j-1>=0:
             up_y=self[i,j-1]
+
         else: up_y=self[i,self._height-1]  
         if j+1<=self._height-1:
             down_y=self[i,j+1]
@@ -53,6 +54,10 @@ class SeamCarver(Picture):
         '''
 
         
+        def energy(i: int,j: int):
+            return self.energy(i,j)
+
+
         start_time = time.time()
         returned_seam=[]
         memoization=dict()
@@ -160,14 +165,7 @@ class SeamCarver(Picture):
             return vertical_seam
 
         #Energy Efficient (top down Approach) Method.
-                        
 
-
-
-
-
-        k=0
-        
         #tests
         #print(M(0,0))
         returned_seam=arraybuilder_solution()
@@ -184,7 +182,42 @@ class SeamCarver(Picture):
         horizontal seam
         '''
 
-        print(self[0,0])
+        original_energy_function=self.energy
+
+
+
+        originalheight=self._height
+        originalwidth=self._width
+
+        self._width=originalheight
+        self._height=originalwidth
+
+        def horizontal_energy(i: int,j :int):
+            a=0
+            self._height=originalheight
+            self._width=originalwidth
+            a=original_energy_function(j,i)
+            self._width=originalheight
+            self._height=originalwidth
+            return  a
+            
+        
+        self.energy=horizontal_energy
+
+        horizontal_seam=[]
+
+        horizontal_seam=self.find_vertical_seam()
+
+        self.energy=original_energy_function
+        self._height=originalheight
+        self._width=originalwidth
+
+
+        print(horizontal_seam)
+        return horizontal_seam
+
+
+        
         
         raise NotImplementedError
 
@@ -192,46 +225,12 @@ class SeamCarver(Picture):
         '''
         Remove a vertical seam from the picture
         '''
-
-        # checker
-
-        if len(seam) != self._height:
-            raise SeamError("SEAM LENGTH MUST EQUAL IMAGE HEIGHT")
-        
-        if self._width <= 1:
-            raise SeamError("CANNOT REMOVE SEAM WITH WIDTH = 1")
-        
-        for j in range (1, self._height):
-            if abs(seam[j] - seam[j-1]) > 1:
-                raise SeamError("CONSECUTIVE ENTRIES DIFFER BY MORE THAN 1")
-            
-        for j in range(self._height): 
-            if seam[j] < 0 or seam[j] >= self._width:
-                raise IndexError("SEAM INDEX IS OUT OF BOUNDS")
-
-        # seaming
         raise NotImplementedError
 
     def remove_horizontal_seam(self, seam: list[int]):
         '''
         Remove a horizontal seam from the picture
         '''
-
-        # checker
-
-        if len(seam) != self._width:
-            raise SeamError("SEAM LENGTH MUST EQUAL IMAGE WIDTH")
-        
-        if self._height <= 1:
-            raise SeamError("CANNOT REMOVE SEAM WITH HEIGHT = 1")
-        
-        for i in range (1, self._width):
-            if abs(seam[i] - seam[i-1]) > 1:
-                raise SeamError("CONSECUTIVE ENTRIES DIFFER BY MORE THAN 1")
-            
-        for i in range(self._width): 
-            if seam[i] < 0 or seam[i] >= self._width:
-                raise IndexError("SEAM INDEX IS OUT OF BOUNDS")
         print(self.get(0,0))
 
         raise NotImplementedError
