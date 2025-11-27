@@ -10,10 +10,11 @@ class SeamCarver(Picture):
         '''
         Return the energy of pixel at column i and row j
         '''
-        #does that pixel exist
 
-        #Can be itterated using loops using i, j, and a constant a, just for testing purposes
-        #checks if self[x_1,y] exists, else sets x to be i
+        try:
+            self[i,j]
+        except KeyError:
+            raise IndexError
 
         if i-1>=0:
             left_x=self[i-1,j]
@@ -36,9 +37,6 @@ class SeamCarver(Picture):
         G_y=up_y[1]-down_y[1]
         B_y=up_y[2]-down_y[2]
 
-        # print(left_x, right_x , up_y, down_y, R_x , G_x, B_x, R_y , G_y, B_y)
-
-        # print(R_x, G_x, B_x, R_y, G_y, B_y, R_x**2+G_x**2+B_x**2+R_y**2+G_y**2+B_y**2)
         
         energy=math.sqrt(R_x**2+G_x**2+B_x**2+R_y**2+G_y**2+B_y**2)
 
@@ -58,63 +56,8 @@ class SeamCarver(Picture):
             return self.energy(i,j)
 
 
-        start_time = time.time()
         returned_seam=[]
         memoization=dict()
-        w=0
-        q=sys.maxsize
-        #Energy Inefficient Method
-        ''' def M(i,j):
-            energypath=0
-            if i<0: i=0
-            if i>self._width-1: i=self._width-1
-            if j==0:
-                energypath=self.energy(i,j)
-            else:
-                energypath=self.energy(i,j) + min(M(i-1,j-1),M(i,j-1),M(i+1,j-1))
-            return energypath
-        '''
-        ''' while w < self._width: 
-            q=min(q,M(w,self._height-1))
-            w+=1
-        '''   
-
-        '''
-        #Energy Semi Efficient Method. 
-        def vertical_seam_memoization(i,j, memoization):
-            for a in range(self._width):
-                for b in range(self._height):
-                    memoization[a,b]=sys.maxsize
-            return VS(i,j,memoization)
-        
-        def VS(i,j, memoization):
-
-            if i<0: 
-                i=0
-            if i>self._width-1:
-                i=self._width-1
-            if memoization[i,j]<sys.maxsize:
-                return memoization[i,j]
-            energypath=0
-            if j<=0:
-                energypath=self.energy(i,j)
-            else:
-                energypath=sys.maxsize
-                energypath=self.energy(i,j) + min(VS(i-1,j-1, memoization),VS(i,j-1, memoization),VS(i+1,j-1, memoization))
-            memoization[i,j]=energypath
-            vertical_seam[i,j]=energypath
-
-            return energypath
-        w=0
-
-        #use divide and countuer this 
-        lnbro=sys.maxsize
-        while w < self._width: 
-            lnbro=min(lnbro,vertical_seam_memoization(w, self._height-1, vertical_seam))
-            w+=1
-        ''' 
-        #Energy Efficient (Bottom Up Approach) Method. 
-        energypath=0
         def arraybuilder_solution() -> list[int]:
             
             for a in range(self._height):
@@ -166,12 +109,7 @@ class SeamCarver(Picture):
 
         #Energy Efficient (top down Approach) Method.
 
-        #tests
-        #print(M(0,0))
         returned_seam=arraybuilder_solution()
-        #print(M(0,1))
-        #print(q)
-        print("--- %s seconds ---" % (time.time() - start_time))
         return returned_seam
     
         raise NotImplementedError
@@ -213,7 +151,7 @@ class SeamCarver(Picture):
         self._width=originalwidth
 
 
-        print(horizontal_seam)
+        #print(horizontal_seam)
         return horizontal_seam
 
 
@@ -225,23 +163,69 @@ class SeamCarver(Picture):
         '''
         Remove a vertical seam from the picture
         '''
-        for a in range(self._height):
-            self[seam[a], a] = self[seam[a] + 1, a]
-            del self[self._width-1, a]
-        self._width -= 1
 
-        #raise NotImplementedError
+        if(len(seam)!=self._height):
+            raise SeamError
+        if(self._width<=1):
+            raise SeamError
+        previousseam=-2
+        for a in range(len(seam)):
+            
+            if previousseam==-2:
+                previousseam=seam[a]
+                continue
+            elif(abs(previousseam-seam[a])>1):
+                raise SeamError
+            else:
+                previousseam=seam[a]
+
+        else:
+            b=-2
+            for a in range(self._height):
+
+                b=seam[a]
+
+                while b < self._width-1:
+                    self[b, a] = self[b + 1, a]
+                    b+=1
+                del self[self._width-1, a]
+            self._width -= 1
+        return 0
+        raise NotImplementedError
 
     def remove_horizontal_seam(self, seam: list[int]):
         '''
         Remove a horizontal seam from the picture
         '''
-        for a in range(self._width):
-            self[a, seam[a]] = self[a, seam[a] + 1]
-            del self[a, self._height-1]
-        self._height -= 1
 
-        #raise NotImplementedError
+        if(len(seam)!=self._width):
+            raise SeamError
+        if(self._height<=1):
+            raise SeamError
+        previousseam=-2
+        for a in range(len(seam)):
+            
+            if previousseam==-2:
+                previousseam=seam[a]
+                continue
+            elif(abs(previousseam-seam[a])>1):
+                raise SeamError
+            else:
+                previousseam=seam[a]
+
+        else:
+            for a in range(self._width):
+                
+                b=seam[a]
+                while b < self._height-1:
+                    self[a, b] = self[a, b+1]
+                    b+=1
+                
+                del self[a, self._height-1]
+            self._height -= 1
+
+        return 0
+        raise NotImplementedError
 
 class SeamError(Exception):
     pass
